@@ -1,0 +1,28 @@
+[ 
+{
+  "Name": "Synapse in a day - Fraud detection",
+  "Language": "English",
+  "Files": [
+    {
+      "RawFilePath": "https://raw.githubusercontent.com/CloudLabsAI-Azure/azure-synapse-in-a-day-demos/master/fraud-detection/Getting%20Started.md",
+      "Order": 1
+    },
+    {
+      "RawFilePath": "https://raw.githubusercontent.com/CloudLabsAI-Azure/azure-synapse-in-a-day-demos/master/fraud-detection/Overview.md",
+      "Order": 2
+    },
+    {
+      "RawFilePath": "https://raw.githubusercontent.com/CloudLabsAI-Azure/azure-synapse-in-a-day-demos/master/fraud-detection/Lab-pre-requisite.md",
+      "Order": 3
+    },
+    {
+      "RawFilePath": "https://raw.githubusercontent.com/CloudLabsAI-Azure/azure-synapse-in-a-day-demos/master/fraud-detection/01.md",
+      "Order": 4
+    },
+    {
+      "RawFilePath": "https://raw.githubusercontent.com/CloudLabsAI-Azure/azure-synapse-in-a-day-demos/master/fraud-detection/02.md",
+      "Order": 5
+    }
+  ]
+} 
+]

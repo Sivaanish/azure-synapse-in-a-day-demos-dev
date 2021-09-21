@@ -1,0 +1,192 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "UniqueSuffix": {
+            "type": "String",
+            "metadata": {
+                "description": "Suffix added to all resource names to make them unique. Enter between 4 and 8 characters"
+            }
+        },
+        "Region": {
+            "type": "string",
+            "defaultValue": "[resourceGroup().location]",
+            "metadata": {
+                "description": "Location for the IoT Hub and Stream Analytics services."
+            }
+        }
+    },
+    "variables": {
+        "name_suffix": "[take(toLower(parameters('UniqueSuffix')), 8)]",
+        "CameraIotHubName": "[concat('handson-iothub', variables('name_suffix'))]",
+        "SensorIotHubName": "[concat('handson-iothub-sensor', variables('name_suffix'))]",
+        "CameraSAJName": "[concat('handson-SAJ', variables('name_suffix'))]",
+        "SensorSAJName": "[concat('handson-SAJ-sensor', variables('name_suffix'))]",
+        "CameraCGName": "[concat('handson-iothub', variables('name_suffix'), '/events/handson-cg')]",
+        "SensorCGName": "[concat('handson-iothub-sensor', variables('name_suffix'), '/events/handson-cg')]"
+    },
+    "resources": [
+        {
+            "type": "Microsoft.Devices/IotHubs",
+            "apiVersion": "2020-03-01",
+            "name": "[variables('CameraIotHubName')]",
+            "location": "[parameters('Region')]",
+            "sku": {
+                "name": "S1",
+                "tier": "Standard",
+                "capacity": 1
+            },
+            "properties": {
+                "ipFilterRules": [],
+                "eventHubEndpoints": {
+                    "events": {
+                        "retentionTimeInDays": 1,
+                        "partitionCount": 4
+                    }
+                },
+                "routing": {
+                    "endpoints": {
+                        "serviceBusQueues": [],
+                        "serviceBusTopics": [],
+                        "eventHubs": [],
+                        "storageContainers": []
+                    },
+                    "routes": [],
+                    "fallbackRoute": {
+                        "name": "$fallback",
+                        "source": "DeviceMessages",
+                        "condition": "true",
+                        "endpointNames": [
+                            "events"
+                        ],
+                        "isEnabled": true
+                    }
+                },
+                "messagingEndpoints": {
+                    "fileNotifications": {
+                        "lockDurationAsIso8601": "PT1M",
+                        "ttlAsIso8601": "PT1H",
+                        "maxDeliveryCount": 10
+                    }
+                },
+                "enableFileUploadNotifications": false,
+                "cloudToDevice": {
+                    "maxDeliveryCount": 10,
+                    "defaultTtlAsIso8601": "PT1H",
+                    "feedback": {
+                        "lockDurationAsIso8601": "PT1M",
+                        "ttlAsIso8601": "PT1H",
+                        "maxDeliveryCount": 10
+                    }
+                },
+                "features": "None"
+            }
+        },
+        {
+            "type": "Microsoft.Devices/iotHubs/eventhubEndpoints/ConsumerGroups",
+            "apiVersion": "2018-04-01",
+            "name": "[variables('CameraCGName')]",
+            "dependsOn": [
+                "[resourceId('Microsoft.Devices/IotHubs', variables('CameraIotHubName'))]"
+            ]
+        },
+        {
+            "type": "Microsoft.Devices/IotHubs",
+            "apiVersion": "2020-03-01",
+            "name": "[variables('SensorIotHubName')]",
+            "location": "[parameters('Region')]",
+            "sku": {
+                "name": "S1",
+                "tier": "Standard",
+                "capacity": 1
+            },
+            "properties": {
+                "ipFilterRules": [],
+                "eventHubEndpoints": {
+                    "events": {
+                        "retentionTimeInDays": 1,
+                        "partitionCount": 4
+                    }
+                },
+                "routing": {
+                    "endpoints": {
+                        "serviceBusQueues": [],
+                        "serviceBusTopics": [],
+                        "eventHubs": [],
+                        "storageContainers": []
+                    },
+                    "routes": [],
+                    "fallbackRoute": {
+                        "name": "$fallback",
+                        "source": "DeviceMessages",
+                        "condition": "true",
+                        "endpointNames": [
+                            "events"
+                        ],
+                        "isEnabled": true
+                    }
+                },
+                "messagingEndpoints": {
+                    "fileNotifications": {
+                        "lockDurationAsIso8601": "PT1M",
+                        "ttlAsIso8601": "PT1H",
+                        "maxDeliveryCount": 10
+                    }
+                },
+                "enableFileUploadNotifications": false,
+                "cloudToDevice": {
+                    "maxDeliveryCount": 10,
+                    "defaultTtlAsIso8601": "PT1H",
+                    "feedback": {
+                        "lockDurationAsIso8601": "PT1M",
+                        "ttlAsIso8601": "PT1H",
+                        "maxDeliveryCount": 10
+                    }
+                },
+                "features": "None"
+            }
+        },
+        {
+            "type": "Microsoft.Devices/iotHubs/eventhubEndpoints/ConsumerGroups",
+            "apiVersion": "2018-04-01",
+            "name": "[variables('SensorCGName')]",
+            "dependsOn": [
+                "[resourceId('Microsoft.Devices/IotHubs', variables('SensorIotHubName'))]"
+            ]
+        },
+        {
+            "type": "Microsoft.StreamAnalytics/streamingjobs",
+            "apiVersion": "2016-03-01",
+            "name": "[variables('CameraSAJName')]",
+            "location": "[parameters('Region')]",
+            "properties": {
+                "sku": {
+                    "name": "Standard"
+                },
+                "eventsOutOfOrderPolicy": "Adjust",
+                "outputErrorPolicy": "Stop",
+                "eventsOutOfOrderMaxDelayInSeconds": 0,
+                "eventsLateArrivalMaxDelayInSeconds": 5,
+                "dataLocale": "en-US",
+                "compatibilityLevel": "1.1"
+            }
+        },
+                {
+            "type": "Microsoft.StreamAnalytics/streamingjobs",
+            "apiVersion": "2016-03-01",
+            "name": "[variables('SensorSAJName')]",
+            "location": "[parameters('Region')]",
+            "properties": {
+                "sku": {
+                    "name": "Standard"
+                },
+                "eventsOutOfOrderPolicy": "Adjust",
+                "outputErrorPolicy": "Stop",
+                "eventsOutOfOrderMaxDelayInSeconds": 0,
+                "eventsLateArrivalMaxDelayInSeconds": 5,
+                "dataLocale": "en-US",
+                "compatibilityLevel": "1.1"
+            }
+        }
+    ]
+}
